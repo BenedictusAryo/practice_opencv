@@ -5,7 +5,8 @@ import cv2
 import sys
 
 # Set Argument
-cascPath = sys.argv[1]
+#cascPath = sys.argv[1]
+cascPath = "haarcascade_frontalface_default.xml"
 faceCascade = cv2.CascadeClassifier(cascPath)
 
 # Set default webcam
