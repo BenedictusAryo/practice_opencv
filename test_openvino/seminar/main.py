@@ -31,8 +31,16 @@ def main():
     net = IENetwork(model=model_xml, weights=model_bin) 
 	# Load network to the plugin for cpu processing, no need for GPU or MYRIAD
 	
+
+    #########################  CHANGE THIS LINE FOR WINDOWS / UBUNTU ########
+
+    # Plugin UBUNTU :
 	#plugin.add_cpu_extension("/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so")
+    
+    # Plugin Windows
     plugin.add_cpu_extension(r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll")
+    
+    # Load the 
     exec_net = plugin.load(network=net)
     ########################################################################
     
