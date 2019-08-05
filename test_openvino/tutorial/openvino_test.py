@@ -11,7 +11,7 @@ net = IENetwork(model=model_xml, weights=model_bin)
 plugin = IEPlugin(device='CPU')
 cpu_dll_path = "C:\Program Files (x86)\IntelSWTools\openvino_2019.1.087\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll"
 
-plugin.add_cpu_extension(r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll")
+plugin.add_cpu_extension(cpu_dll_path)#r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll")
 exec_net = plugin.load(network=net)
 
 input_blob = next(iter(net.inputs)) #Input_blob = 'Data'

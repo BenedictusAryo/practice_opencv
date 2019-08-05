@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# (C) Copyright 2018, Intel Corporation
-# SPDX-License-Identifier: MIT
+# Benedict Aryo Face Detection using OpenVino
+
 from openvino.inference_engine import IENetwork, IEPlugin
 from os.path import isfile, join
 from scipy import spatial
@@ -9,22 +9,23 @@ import logging as log
 import cv2 as cv
 import os
 import sys
+import platform
 
 def main():
     #######################  Device  Initialization  ########################
     #  Plugin initialization for specified device and load extensions library if specified
-    
-    plugin = IEPlugin(device="CPU")
-#    plugin = IEPlugin(device="MYRIAD")
+    device = "CPU"
+
+    # Device Options = "CPU", "GPU", "MYRIAD"
+
+    plugin = IEPlugin(device=device)
+
     #########################################################################
 
     # prepare the model
-    #model_xml = "/home/intel/intel_models/face-detection-retail-0004/face-detection-retail-0004.xml"
-    #model_bin = "/home/intel/intel_models/face-detection-retail-0004/face-detection-retail-0004.bin"
     model_xml = "face-detection-retail-0004.xml"
     model_bin = "face-detection-retail-0004.bin"
     
-
                 
     #########################  Load Neural Network  #########################
     #  Read in Graph file (IR)
@@ -32,15 +33,23 @@ def main():
 	# Load network to the plugin for cpu processing, no need for GPU or MYRIAD
 	
 
-    #########################  CHANGE THIS LINE FOR WINDOWS / UBUNTU ########
+    ############ DETECT OS WINDOWS / UBUNTU  TO USE EXTENSION LIBRARY #######
 
     # Plugin UBUNTU :
-	#plugin.add_cpu_extension("/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so")
+    linux_cpu_plugin = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so"
     
     # Plugin Windows
-    plugin.add_cpu_extension(r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll")
+    windows_cpu_plugin = r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll"
     
-    # Load the 
+    if platform.system() == 'Windows':
+        cpu_plugin = windows_cpu_plugin
+    else:
+        cpu_plugin = linux_cpu_plugin
+
+    if device == "CPU":
+        plugin.add_cpu_extension(cpu_plugin)
+    
+    # Load the Execution Network
     exec_net = plugin.load(network=net)
     ########################################################################
     
