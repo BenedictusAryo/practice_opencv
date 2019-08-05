@@ -20,7 +20,7 @@ def main():
 
     plugin = IEPlugin(device=device)
 
-    #########################################################################
+    #######################  Model  Initialization  ########################
 
     # prepare the model
     model_xml = "face-detection-retail-0004.xml"

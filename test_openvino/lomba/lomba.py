@@ -3,48 +3,59 @@
 """
 Created on Fri Aug  2 20:14:14 2019
 
-@author: benedict
+@author: benedict.aryo
 """
-
+#######################################################################
+######################  Library Initialization  #########################
+#  Import Library being used in program
 from openvino.inference_engine import IENetwork, IEPlugin
 import cv2 as cv
+import platform
 
+#######################################################################
 #######################  Device  Initialization  ########################
 #  Plugin initialization for specified device and load extensions library if specified
 
-plugin = IEPlugin(device="CPU")
-#    plugin = IEPlugin(device="MYRIAD")
-#########################################################################
+device = "CPU"
 
-# prepare the model
-## UBUNTU
-model_xml = "/home/benedict/practice_opencv/test_openvino/lomba/age-gender-recognition-retail-0013.xml"
-model_bin = "/home/benedict/practice_opencv/test_openvino/lomba/age-gender-recognition-retail-0013.bin"
+# Device Options = "CPU", "GPU", "MYRIAD"
+plugin = IEPlugin(device=device)
 
-# WINDOWS
-#model_xml = "face-detection-retail-0004.xml"
-#model_bin = "face-detection-retail-0004.bin"
+# DETECT OS WINDOWS / UBUNTU  TO USE EXTENSION LIBRARY
 
+# Plugin UBUNTU :
+linux_cpu_plugin = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so"
+
+# Plugin Windows
+windows_cpu_plugin = r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll"
+
+if platform.system() == 'Windows':
+    cpu_plugin = windows_cpu_plugin
+else:
+    cpu_plugin = linux_cpu_plugin
+
+# Add Extension to Device Plugin
+if device == "CPU":
+    plugin.add_cpu_extension(cpu_plugin)
+ 
+#################### no need for GPU or MYRIAD ########################
+#######################################################################
+
+#######################  Model Initialization  ########################
+#  Prepare and load the models
+
+model_xml = "models/face-detection-retail-0004.xml"
+model_bin = "models/face-detection-retail-0004.bin"
 
             
 #########################  Load Neural Network  #########################
 #  Read in Graph file (IR)
 net = IENetwork(model=model_xml, weights=model_bin) 
 
-############# Load network to the plugin for cpu processing, ############ 
-###################### no need for GPU or MYRIAD ########################
-
-#########################  CHANGE THIS LINE FOR WINDOWS / UBUNTU ########
-
-# Plugin UBUNTU :
-plugin.add_cpu_extension("/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so")
-
-
-# Plugin Windows
-#plugin.add_cpu_extension(r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll")
 
 # Load the Network using Plugin Device
 exec_net = plugin.load(network=net)
+############# Load network to the plugin for cpu processing, ############
 ########################################################################
 
 #########################  Obtain Input Tensor  ########################
