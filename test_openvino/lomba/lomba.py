@@ -24,14 +24,14 @@ plugin = IEPlugin(device=device)
 
 # DETECT OS WINDOWS / UBUNTU  TO USE EXTENSION LIBRARY
 # Plugin UBUNTU :
-linux_cpu_plugin = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so"
+LINUX_CPU_PLUGIN = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so"
 # Plugin Windows
-windows_cpu_plugin = r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll"
+WINDOWS_CPU_PLUGIN = r"C:\Program Files (x86)\IntelSWTools\openvino\deployment_tools\inference_engine\bin\intel64\Release\cpu_extension_avx2.dll"
 
 if platform.system() == 'Windows':
-    cpu_plugin = windows_cpu_plugin
+    cpu_plugin = WINDOWS_CPU_PLUGIN
 else:
-    cpu_plugin = linux_cpu_plugin
+    cpu_plugin = LINUX_CPU_PLUGIN
 
 # Add Extension to Device Plugin
 if device == "CPU":
@@ -44,12 +44,12 @@ if device == "CPU":
 #  Prepare and load the models
 
 ## Model 1: Face Detection
-model1_xml = "models/face-detection-retail-0004.xml"
-model1_bin = "models/face-detection-retail-0004.bin"
+FACEDETECT_XML = "models/face-detection-retail-0004.xml"
+FACEDETECT_BIN = "models/face-detection-retail-0004.bin"
 
 ## Model 2: Age Gender Recognition
-model2_xml = "models/age-gender-recognition-retail-0013.xml"
-model2_bin = "models/age-gender-recognition-retail-0013.bin"
+AGEGENDER_XML = "models/age-gender-recognition-retail-0013.xml"
+AGEGENDER_BIN = "models/age-gender-recognition-retail-0013.bin"
 
 
 #########################  Load Neural Network  #########################
@@ -73,42 +73,32 @@ def load_model(plugin, model, weights):
 
 
 ####################  Create Execution Network  #######################
-net1, exec_net1 = load_model(plugin, model1_xml,model1_bin)
-net2, exec_net2 = load_model(plugin, model2_xml, model2_bin)
+net1, exec_net1 = load_model(plugin, FACEDETECT_XML,FACEDETECT_BIN)
+net2, exec_net2 = load_model(plugin, AGEGENDER_XML, AGEGENDER_BIN)
 
 ###################  Obtain Input&Output Tensor  ######################
 ## Model 1
-#  Obtain and preprocess input tensor (image)
-input_net1 = 'data'
-output_net1 = 'detection_out'
+#  Define Input&Output Network dict keys
+FACEDETECT_INPUTKEYS = 'data'
+FACEDETECT_OUTPUTKEYS = 'detection_out'
 #  Obtain image_count, channels, height and width
-n_model1, c_model1, h_model1, w_model1 = net1.inputs[input_net1].shape
+n_facedetect, c_facedetect, h_facedetect, w_facedetect = net1.inputs[FACEDETECT_INPUTKEYS].shape
 
 ## Model 2
-#  Obtain and preprocess input tensor (image)
-input_net2 = next(iter(net2.inputs))
-output_net2 = next(iter(net2.outputs))
+#  Define Input&Output Network dict keys
+AGEGENDER_INPUTKEYS = 'data'
+AGE_OUTPUTKEYS = 'age_conv3'
+GENDER_OUTPUTKEYS = 'prob'
 #  Obtain image_count, channels, height and width
-n_model2, c_model2, h_model2, w_model2 = net2.inputs[input_net2].shape
+n_model2, c_model2, h_model2, w_model2 = net2.inputs[AGEGENDER_INPUTKEYS].shape
 
-def face_detect_preprocessing(n, c, h, w):
+def image_preprocessing(image,(n, c, h, w)):
     """
     Image Preprocessing steps, to match image 
     with Input Neural nets
     
-    N=1, Channel=3, Height=300, Width=300
-    """
-    blob = cv.resize(image, (w, h)) # Resize width & height
-    blob = blob.transpose((2, 0, 1)) # Change data layout from HWC to CHW
-    blob = blob.reshape((n, c, h, w))
-    return blob
-
-def age_gender_preprocessing(n, c, h, w):
-    """
-    Image Preprocessing steps, to match image 
-    with Input Neural nets
-    
-    N=1, Channel=3, Height=62, Width=62
+    Image,
+    tupple(N, Channel, Height, Width)
     """
     blob = cv.resize(image, (w, h)) # Resize width & height
     blob = blob.transpose((2, 0, 1)) # Change data layout from HWC to CHW
@@ -135,12 +125,12 @@ while cv.waitKey(1) != ord('q'):
 
     ###################  Start  Inference Face Detection  ###################
     #  Start asynchronous inference and get inference result
-    blob = face_detect_preprocessing(n_model1, c_model1, h_model1, w_model1)
-    req_handle = exec_net1.start_async(request_id=0, inputs={input_net1:blob})
+    blob = image_preprocessing(image, (n_facedetect, c_facedetect, h_facedetect, w_facedetect))
+    req_handle = exec_net1.start_async(request_id=0, inputs={FACEDETECT_INPUTKEYS:blob})
 
     ######################## Get Inference Result  #########################
     status = req_handle.wait()
-    res = req_handle.outputs[output_net1]
+    res = req_handle.outputs[FACEDETECT_OUTPUTKEYS]
 
     # Get Bounding Box Result
     for detection in res[0][0]:
