@@ -53,6 +53,12 @@ AGEGENDER_BIN = "models/age-gender-recognition-retail-0013.bin"
 
 GENDER_LIST=['Female', 'Male']
 
+def age_class(age):
+    """
+    Classify Age whether it's below or above 30
+    """
+    return 'Below 30' if age <= 30 else 'Above 30'
+
 #########################  Load Neural Network  #########################
 def load_model(plugin, model, weights):
     """
@@ -136,37 +142,45 @@ while cv.waitKey(1) != ord('q'):
     # Get Bounding Box Result
     for detection in res[0][0]:
         confidence = float(detection[2]) # Face detection Confidence
-        # Obtain Bounding box coordinate
-        xmin = int(detection[3] * image.shape[1])
-        ymin = int(detection[4] * image.shape[0])
-        xmax = int(detection[5] * image.shape[1])
-        ymax = int(detection[6] * image.shape[0])
+        # Obtain Bounding box coordinate, Add 2 just for padding
+        xmin = int(detection[3] * image.shape[1] +2)
+        ymin = int(detection[4] * image.shape[0] +2)
+        xmax = int(detection[5] * image.shape[1] +2)
+        ymax = int(detection[6] * image.shape[0] +2)
+
+        # OpenCV Drawing Set Up
+        font = cv.FONT_HERSHEY_SIMPLEX
+        fontColor = (0,0,255)
+        bottomLeftCornerOfText = (xmin,ymin-10)
+        fontScale = 1
+        lineType = 2
 
         # Crop Face which having confidence > 90%
         if confidence > 0.9:
             ## Draw Boundingbox
-            cv.rectangle(image, (xmin, ymin), (xmax, ymax), (0,0,255))
+            cv.rectangle(image, (xmin, ymin), (xmax, ymax), fontColor)
             
             ## Create CropFace to recognize ageGender
             crop_face = image[ymin:ymax, xmin:xmax]
-
+            try:
             ## Infer to Gender & Age Model
-            blob_ageGender = image_preprocessing(crop_face,n_ageGender,c_ageGender,h_ageGender,w_ageGender)
-            req_handle_ageGender = exec_ageGender.start_async(request_id=0, inputs={AGEGENDER_INPUTKEYS:blob_ageGender})
+                blob_ageGender = image_preprocessing(crop_face,n_ageGender,c_ageGender,h_ageGender,w_ageGender)
+                req_handle_ageGender = exec_ageGender.start_async(request_id=0, inputs={AGEGENDER_INPUTKEYS:blob_ageGender})
 
-            ## Get inference result
-            # Age
-            status = req_handle_ageGender.wait()
-            age = req_handle_ageGender.outputs[AGE_OUTPUTKEYS]
-            age = int(age[0,0,0,0] *100)
-            # Gender
-            gender = req_handle_ageGender.outputs[GENDER_OUTPUTKEYS]
-            gender = gender[0,:,0,0].argmax()
-            #print(age,GENDER_LIST[gender])
+                ## Get inference result
+                # Age
+                status = req_handle_ageGender.wait()
+                age = req_handle_ageGender.outputs[AGE_OUTPUTKEYS]
+                age = int(age[0,0,0,0] *100)
+                # Gender
+                gender = req_handle_ageGender.outputs[GENDER_OUTPUTKEYS]
+                gender = gender[0,:,0,0].argmax()
+                #print(age,GENDER_LIST[gender])
 
-            # Put text of Age and Gender
-            cv.putText(image,GENDER_LIST[gender]+', '+str(age),(xmin,ymin),cv.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
-
+                # Put text of Age and Gender
+                cv.putText(image,f"{GENDER_LIST[gender]}, {age_class(age)}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+            except:
+                continue
     cv.imshow('AI_Vertising', image)
 
 ###############################  Clean  Up  ############################
