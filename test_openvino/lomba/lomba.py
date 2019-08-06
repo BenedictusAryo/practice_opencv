@@ -40,28 +40,56 @@ if device == "CPU":
 #################### no need for GPU or MYRIAD ########################
 #######################################################################
 
-#######################  Model Initialization  ########################
+#######################  MODEL INITIALIZATION  ########################
 #  Prepare and load the models
 
-model_xml = "models/face-detection-retail-0004.xml"
-model_bin = "models/face-detection-retail-0004.bin"
+## Model 1: Face Detection
+model1_xml = "models/face-detection-retail-0004.xml"
+model1_bin = "models/face-detection-retail-0004.bin"
 
-            
+## Model 2: Age Gender Recognition
+model2_xml = "models/face-detection-retail-0004.xml"
+model2_bin = "models/face-detection-retail-0004.bin"
+
+
 #########################  Load Neural Network  #########################
-#  Read in Graph file (IR)
-net = IENetwork(model=model_xml, weights=model_bin) 
+def load_model(plugin, model, weights):
+    """
+    Load OpenVino IR Models
 
-# Load the Network using Plugin Device
-exec_net = plugin.load(network=net)
-############# Load network to the plugin for cpu processing, ############
-########################################################################
+    Input:
+    Plugin = Hardware Accelerator
+    Model = model_xml file 
+    Weights = model_bin file
+    
+    Output:
+    execution network (exec_net)
+    """
+    #  Read in Graph file (IR) to create network
+    net = IENetwork(model, weights) 
+    # Load the Network using Plugin Device
+    exec_net = plugin.load(network=net)
+    return net, exec_net
 
-#########################  Obtain Input Tensor  ########################
+
+####################  Create Execution Network  #######################
+net1, exec_net1 = load_model(plugin, model1_xml,model1_bin)
+net2, exec_net2 = load_model(plugin, model2_xml, model2_bin)
+
+###################  Obtain Input&Output Tensor  ######################
+## Model 1
 #  Obtain and preprocess input tensor (image)
-input_layer = next(iter(net.inputs))
-out_layer = next(iter(net.outputs))
+input_net1 = next(iter(net1.inputs))
+output_net1 = next(iter(net1.outputs))
 #  Obtain image_count, channels, height and width
-n, c, h, w = net.inputs[input_layer].shape
+n_model1, c_model1, h_model1, w_model1 = net1.inputs[input_net1].shape
+
+## Model 2
+#  Obtain and preprocess input tensor (image)
+input_net2 = next(iter(net2.inputs))
+output_net2 = next(iter(net2.outputs))
+#  Obtain image_count, channels, height and width
+n_model2, c_model2, h_model2, w_model2 = net2.inputs[input_net2].shape
 
 def face_detect_preprocessing(n, c, h, w):
     """
@@ -75,10 +103,22 @@ def face_detect_preprocessing(n, c, h, w):
     blob = blob.reshape((n, c, h, w))
     return blob
 
+def age_gender_preprocessing(n, c, h, w):
+    """
+    Image Preprocessing steps, to match image 
+    with Input Neural nets
+    
+    N=1, Channel=3, Height=62, Width=62
+    """
+    blob = cv.resize(image, (w, h)) # Resize width & height
+    blob = blob.transpose((2, 0, 1)) # Change data layout from HWC to CHW
+    blob = blob.reshape((n, c, h, w))
+    return blob
+
 
 #########################  Read Video Capture  ########################
 #  Using OpenCV to read Video/Camera
-vid_or_cam = 0 #'face-demographics-walking-and-pause.mp4'
+vid_or_cam = 'face-demographics-walking-and-pause.mp4'
 #  Use 0 for Webcam, 1 for Externaql Camera, or string with filepath for video
 cap = cv.VideoCapture(vid_or_cam)
 
@@ -93,16 +133,14 @@ while cv.waitKey(1) != ord('q'):
     if not hasFrame:
         break
 
-    ########################################################################
-    
-    ##########################  Start  Inference  ##########################
+    ###################  Start  Inference Face Detection  ###################
     #  Start asynchronous inference and get inference result
-    blob = face_detect_preprocessing(n, c, h, w)
-    req_handle = exec_net.start_async(request_id=0, inputs={input_layer:blob})
+    blob = face_detect_preprocessing(n_model1, c_model1, h_model1, w_model1)
+    req_handle = exec_net1.start_async(request_id=0, inputs={input_net1:blob})
 
     ######################## Get Inference Result  #########################
     status = req_handle.wait()
-    res = req_handle.outputs[out_layer]
+    res = req_handle.outputs[output_net1]
 
     # Get Bounding Box Result
     for detection in res[0][0]:
@@ -127,8 +165,8 @@ while cv.waitKey(1) != ord('q'):
     cv.imshow('AI_Vetising', image)
 
 ###############################  Clean  Up  ############################
-del exec_net
-del net
+del exec_net1
+del net1
 del plugin
 cap.release()
 cv.destroyAllWindows()
