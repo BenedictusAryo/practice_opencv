@@ -48,8 +48,8 @@ model1_xml = "models/face-detection-retail-0004.xml"
 model1_bin = "models/face-detection-retail-0004.bin"
 
 ## Model 2: Age Gender Recognition
-model2_xml = "models/face-detection-retail-0004.xml"
-model2_bin = "models/face-detection-retail-0004.bin"
+model2_xml = "models/age-gender-recognition-retail-0013.xml"
+model2_bin = "models/age-gender-recognition-retail-0013.bin"
 
 
 #########################  Load Neural Network  #########################
@@ -79,8 +79,8 @@ net2, exec_net2 = load_model(plugin, model2_xml, model2_bin)
 ###################  Obtain Input&Output Tensor  ######################
 ## Model 1
 #  Obtain and preprocess input tensor (image)
-input_net1 = next(iter(net1.inputs))
-output_net1 = next(iter(net1.outputs))
+input_net1 = 'data'
+output_net1 = 'detection_out'
 #  Obtain image_count, channels, height and width
 n_model1, c_model1, h_model1, w_model1 = net1.inputs[input_net1].shape
 
@@ -162,7 +162,7 @@ while cv.waitKey(1) != ord('q'):
             # Draw Boundingbox
             cv.rectangle(image, (xmin, ymin), (xmax, ymax), (0,0,255))
     
-    cv.imshow('AI_Vetising', image)
+    cv.imshow('AI_Vertising', image)
 
 ###############################  Clean  Up  ############################
 del exec_net1
