@@ -51,6 +51,7 @@ FACEDETECT_BIN = "models/face-detection-retail-0004.bin"
 AGEGENDER_XML = "models/age-gender-recognition-retail-0013.xml"
 AGEGENDER_BIN = "models/age-gender-recognition-retail-0013.bin"
 
+GENDER_LIST=['Female', 'Male']
 
 #########################  Load Neural Network  #########################
 def load_model(plugin, model, weights):
@@ -73,8 +74,8 @@ def load_model(plugin, model, weights):
 
 
 ####################  Create Execution Network  #######################
-net1, exec_net1 = load_model(plugin, FACEDETECT_XML,FACEDETECT_BIN)
-net2, exec_net2 = load_model(plugin, AGEGENDER_XML, AGEGENDER_BIN)
+net_facedetect, exec_facedetect = load_model(plugin, FACEDETECT_XML,FACEDETECT_BIN)
+net_ageGender, exec_ageGender = load_model(plugin, AGEGENDER_XML, AGEGENDER_BIN)
 
 ###################  Obtain Input&Output Tensor  ######################
 ## Model 1
@@ -82,7 +83,7 @@ net2, exec_net2 = load_model(plugin, AGEGENDER_XML, AGEGENDER_BIN)
 FACEDETECT_INPUTKEYS = 'data'
 FACEDETECT_OUTPUTKEYS = 'detection_out'
 #  Obtain image_count, channels, height and width
-n_facedetect, c_facedetect, h_facedetect, w_facedetect = net1.inputs[FACEDETECT_INPUTKEYS].shape
+n_facedetect, c_facedetect, h_facedetect, w_facedetect = net_facedetect.inputs[FACEDETECT_INPUTKEYS].shape
 
 ## Model 2
 #  Define Input&Output Network dict keys
@@ -90,15 +91,15 @@ AGEGENDER_INPUTKEYS = 'data'
 AGE_OUTPUTKEYS = 'age_conv3'
 GENDER_OUTPUTKEYS = 'prob'
 #  Obtain image_count, channels, height and width
-n_model2, c_model2, h_model2, w_model2 = net2.inputs[AGEGENDER_INPUTKEYS].shape
+n_ageGender, c_ageGender, h_ageGender, w_ageGender = net_ageGender.inputs[AGEGENDER_INPUTKEYS].shape
 
-def image_preprocessing(image,(n, c, h, w)):
+def image_preprocessing(image,n, c, h, w):
     """
     Image Preprocessing steps, to match image 
     with Input Neural nets
     
     Image,
-    tupple(N, Channel, Height, Width)
+    N, Channel, Height, Width
     """
     blob = cv.resize(image, (w, h)) # Resize width & height
     blob = blob.transpose((2, 0, 1)) # Change data layout from HWC to CHW
@@ -106,9 +107,9 @@ def image_preprocessing(image,(n, c, h, w)):
     return blob
 
 
-#########################  Read Video Capture  ########################
+#########################  READ VIDEO CAPTURE  ########################
 #  Using OpenCV to read Video/Camera
-vid_or_cam = 'face-demographics-walking-and-pause.mp4'
+vid_or_cam = 0 #'face-demographics-walking-and-pause.mp4'
 #  Use 0 for Webcam, 1 for Externaql Camera, or string with filepath for video
 cap = cv.VideoCapture(vid_or_cam)
 
@@ -125,8 +126,8 @@ while cv.waitKey(1) != ord('q'):
 
     ###################  Start  Inference Face Detection  ###################
     #  Start asynchronous inference and get inference result
-    blob = image_preprocessing(image, (n_facedetect, c_facedetect, h_facedetect, w_facedetect))
-    req_handle = exec_net1.start_async(request_id=0, inputs={FACEDETECT_INPUTKEYS:blob})
+    blob = image_preprocessing(image, n_facedetect, c_facedetect, h_facedetect, w_facedetect)
+    req_handle = exec_facedetect.start_async(request_id=0, inputs={FACEDETECT_INPUTKEYS:blob})
 
     ######################## Get Inference Result  #########################
     status = req_handle.wait()
@@ -143,20 +144,36 @@ while cv.waitKey(1) != ord('q'):
 
         # Crop Face which having confidence > 90%
         if confidence > 0.9:
+            ## Draw Boundingbox
+            cv.rectangle(image, (xmin, ymin), (xmax, ymax), (0,0,255))
+            
+            ## Create CropFace to recognize ageGender
             crop_face = image[ymin:ymax, xmin:xmax]
 
-            # Infer to Gender & Age Model
-            ###
+            ## Infer to Gender & Age Model
+            blob_ageGender = image_preprocessing(crop_face,n_ageGender,c_ageGender,h_ageGender,w_ageGender)
+            req_handle_ageGender = exec_ageGender.start_async(request_id=0, inputs={AGEGENDER_INPUTKEYS:blob_ageGender})
 
+            ## Get inference result
+            # Age
+            status = req_handle_ageGender.wait()
+            age = req_handle_ageGender.outputs[AGE_OUTPUTKEYS]
+            age = int(age[0,0,0,0] *100)
+            # Gender
+            gender = req_handle_ageGender.outputs[GENDER_OUTPUTKEYS]
+            gender = gender[0,:,0,0].argmax()
+            #print(age,GENDER_LIST[gender])
 
-            # Draw Boundingbox
-            cv.rectangle(image, (xmin, ymin), (xmax, ymax), (0,0,255))
-    
+            # Put text of Age and Gender
+            cv.putText(image,GENDER_LIST[gender]+', '+str(age),(xmin,ymin),cv.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+
     cv.imshow('AI_Vertising', image)
 
 ###############################  Clean  Up  ############################
-del exec_net1
-del net1
+del exec_facedetect
+del exec_ageGender
+del net_ageGender
+del net_facedetect
 del plugin
 cap.release()
 cv.destroyAllWindows()
