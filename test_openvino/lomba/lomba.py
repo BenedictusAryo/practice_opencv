@@ -20,9 +20,9 @@ parser = argparse.ArgumentParser(
     description="Smart DOOH using OpenVINO Face, Age & Gender Detection.")
 parser.add_argument("-d", "--device", metavar='', default='CPU',
         help="Device to run inference: GPU, CPU or MYRIAD", type=str)
-parser.add_argument("-s", "--stream-input", metavar='', default=0,
+parser.add_argument("-c", "--camera", metavar='', default=0,
         help="Camera Device, default 0 for Webcam",type=int)
-parser.add_argument("-sample", "--sample-video", default=False,
+parser.add_argument("-s", "--sample", default=False,
         action='store_true', help="Inference using sample video")
 
 args = parser.parse_args()
@@ -128,7 +128,7 @@ def image_preprocessing(image,n, c, h, w):
 #########################  READ VIDEO CAPTURE  ########################
 #  Using OpenCV to read Video/Camera
 #  Use 0 for Webcam, 1 for External Camera, or string with filepath for video
-if args.sample_video:
+if args.sample:
     input_stream = 'face-demographics-walking-and-pause.mp4'
 else:
     input_stream = args.stream_input 
