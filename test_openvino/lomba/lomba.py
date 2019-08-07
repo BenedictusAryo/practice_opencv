@@ -12,12 +12,23 @@ from openvino.inference_engine import IENetwork, IEPlugin
 import cv2 as cv
 import platform
 import time
+import argparse    
 
-#######################################################################
+#######################  Import Argument Parser  ########################
+
+parser = argparse.ArgumentParser(description="Smart DOOH using OpenVINO Face Detection.")
+parser.add_argument("-d", "--device", metavar='', default='CPU',
+        help="Device to run inference: GPU, CPU or MYRIAD", type=str)
+parser.add_argument("-s", "--stream-input", metavar='', default=0,
+        help="Camera Device, default 0 for Webcam",type=int)
+parser.add_argument("-s", "--sample-video", action='store_true',
+        help="Inference using sample video")
+
+args = parser.parse_args()
 #######################  Device  Initialization  ########################
 #  Plugin initialization for specified device and load extensions library if specified
 
-device = "CPU"
+device = args.device
 
 # Device Options = "CPU", "GPU", "MYRIAD"
 plugin = IEPlugin(device=device)
@@ -115,12 +126,12 @@ def image_preprocessing(image,n, c, h, w):
 
 #########################  READ VIDEO CAPTURE  ########################
 #  Using OpenCV to read Video/Camera
-vid_or_cam = 0 #'face-demographics-walking-and-pause.mp4'
-#  Use 0 for Webcam, 1 for Externaql Camera, or string with filepath for video
-cap = cv.VideoCapture(vid_or_cam)
+#  Use 0 for Webcam, 1 for External Camera, or string with filepath for video
+input_stream = args.stream_input #'face-demographics-walking-and-pause.mp4'
+cap = cv.VideoCapture(input_stream)
 
 #  If Video File, slow down the video playback based on FPS
-if type(vid_or_cam) is str:
+if type(input_stream) is str:
     time.sleep(1/cap.get(cv.CAP_PROP_FPS))
 
 while cv.waitKey(1) != ord('q'):
