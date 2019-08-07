@@ -56,9 +56,10 @@ if device == "CPU":
 #  Prepare and load the models
 
 ## Model 1: Face Detection
-FACEDETECT_XML = "models/face-detection-retail-0004.xml"
-FACEDETECT_BIN = "models/face-detection-retail-0004.bin"
-
+# FACEDETECT_XML = "models/face-detection-retail-0004.xml"
+# FACEDETECT_BIN = "models/face-detection-retail-0004.bin"
+FACEDETECT_XML = "models/face-detection-adas-0001.xml"
+FACEDETECT_BIN = "models/face-detection-adas-0001.bin"
 ## Model 2: Age Gender Recognition
 AGEGENDER_XML = "models/age-gender-recognition-retail-0013.xml"
 AGEGENDER_BIN = "models/age-gender-recognition-retail-0013.bin"
@@ -131,7 +132,7 @@ def image_preprocessing(image,n, c, h, w):
 if args.sample:
     input_stream = 'face-demographics-walking-and-pause.mp4'
 else:
-    input_stream = args.stream_input 
+    input_stream = args.camera 
 
 cap = cv.VideoCapture(input_stream)
 
