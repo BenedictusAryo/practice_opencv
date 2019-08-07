@@ -14,8 +14,7 @@ import platform
 import time
 import argparse    
 
-#######################  Import Argument Parser  ########################
-
+#######################  Create Argument Parser  ########################
 parser = argparse.ArgumentParser(
     description="Smart DOOH using OpenVINO Face, Age & Gender Detection.")
 parser.add_argument("-d", "--device", metavar='', default='CPU',
@@ -26,10 +25,11 @@ parser.add_argument("-s", "--sample", default=False,
         action='store_true', help="Inference using sample video")
 
 args = parser.parse_args()
+
 #######################  Device  Initialization  ########################
 #  Plugin initialization for specified device and load extensions library if specified
 
-device = args.device
+device = args.device.upper()
 
 # Device Options = "CPU", "GPU", "MYRIAD"
 plugin = IEPlugin(device=device)
@@ -198,6 +198,9 @@ while cv.waitKey(1) != ord('q'):
                 cv.putText(image,f"{GENDER_LIST[gender]}, {age_class(age)}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             except:
                 continue
+
+    cv.namedWindow('AI_Vertising')
+    cv.moveWindow('AI_Vertising', 40,30)
     cv.imshow('AI_Vertising', image)
 
 ###############################  Clean  Up  ############################
