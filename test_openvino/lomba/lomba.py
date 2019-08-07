@@ -16,13 +16,14 @@ import argparse
 
 #######################  Import Argument Parser  ########################
 
-parser = argparse.ArgumentParser(description="Smart DOOH using OpenVINO Face Detection.")
+parser = argparse.ArgumentParser(
+    description="Smart DOOH using OpenVINO Face, Age & Gender Detection.")
 parser.add_argument("-d", "--device", metavar='', default='CPU',
         help="Device to run inference: GPU, CPU or MYRIAD", type=str)
 parser.add_argument("-s", "--stream-input", metavar='', default=0,
         help="Camera Device, default 0 for Webcam",type=int)
-parser.add_argument("-s", "--sample-video", action='store_true',
-        help="Inference using sample video")
+parser.add_argument("-sample", "--sample-video", default=False,
+        action='store_true', help="Inference using sample video")
 
 args = parser.parse_args()
 #######################  Device  Initialization  ########################
@@ -127,7 +128,11 @@ def image_preprocessing(image,n, c, h, w):
 #########################  READ VIDEO CAPTURE  ########################
 #  Using OpenCV to read Video/Camera
 #  Use 0 for Webcam, 1 for External Camera, or string with filepath for video
-input_stream = args.stream_input #'face-demographics-walking-and-pause.mp4'
+if args.sample_video:
+    input_stream = 'face-demographics-walking-and-pause.mp4'
+else:
+    input_stream = args.stream_input 
+
 cap = cv.VideoCapture(input_stream)
 
 #  If Video File, slow down the video playback based on FPS
@@ -153,11 +158,11 @@ while cv.waitKey(1) != ord('q'):
     # Get Bounding Box Result
     for detection in res[0][0]:
         confidence = float(detection[2]) # Face detection Confidence
-        # Obtain Bounding box coordinate, Add 2 just for padding
-        xmin = int(detection[3] * image.shape[1] +2)
-        ymin = int(detection[4] * image.shape[0] +2)
-        xmax = int(detection[5] * image.shape[1] +2)
-        ymax = int(detection[6] * image.shape[0] +2)
+        # Obtain Bounding box coordinate, +-10 just for padding
+        xmin = int(detection[3] * image.shape[1] -10)
+        ymin = int(detection[4] * image.shape[0] -10)
+        xmax = int(detection[5] * image.shape[1] +10)
+        ymax = int(detection[6] * image.shape[0] +10)
 
         # OpenCV Drawing Set Up
         font = cv.FONT_HERSHEY_SIMPLEX
