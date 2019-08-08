@@ -199,8 +199,9 @@ while cv.waitKey(1) != ord('q'):
             except:
                 continue
 
-    cv.namedWindow('AI_Vertising')
+    cv.namedWindow('AI_Vertising', cv.WINDOW_NORMAL)
     cv.moveWindow('AI_Vertising', 40,30)
+    #cv.resizeWindow('AI_Vertising',800,900)
     cv.imshow('AI_Vertising', image)
 
 ###############################  Clean  Up  ############################
