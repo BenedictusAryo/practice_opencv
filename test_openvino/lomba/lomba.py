@@ -64,7 +64,18 @@ FACEDETECT_BIN = "models/face-detection-adas-0001.bin"
 AGEGENDER_XML = "models/age-gender-recognition-retail-0013_FP32.xml"
 AGEGENDER_BIN = "models/age-gender-recognition-retail-0013_FP32.bin"
 
-GENDER_LIST=['Female', 'Male']
+################  Create PostProcessing Inferece Function  ################
+
+def gender_class(gender):
+    """
+    PostProcessing & Classify Output Gender into Male & Female
+    """
+    GENDER_LIST=['Female', 'Male']
+    if gender[0,1,0,0] >= 0.70:
+        return GENDER_LIST[1]
+    else:
+        return GENDER_LIST[0]
+    
 
 def age_class(age):
     """
@@ -195,7 +206,7 @@ while cv.waitKey(1) != ord('q'):
                 #print(age,GENDER_LIST[gender])
 
                 # Put text of Age and Gender
-                cv.putText(image,f"{GENDER_LIST[gender]}, {age_class(age)}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+                cv.putText(image,f"{gender_class(gender)}, {age_class(age)}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             except:
                 continue
 
