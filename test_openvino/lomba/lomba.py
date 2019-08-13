@@ -202,8 +202,6 @@ while cv.waitKey(1) != ord('q'):
                 age = int(age[0,0,0,0] *100)
                 # Gender
                 gender = req_handle_ageGender.outputs[GENDER_OUTPUTKEYS]
-                gender = gender[0,:,0,0].argmax()
-                #print(age,GENDER_LIST[gender])
 
                 # Put text of Age and Gender
                 cv.putText(image,f"{gender_class(gender)}, {age_class(age)}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
