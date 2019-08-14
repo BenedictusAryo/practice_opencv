@@ -71,7 +71,7 @@ def gender_class(gender):
     PostProcessing & Classify Output Gender into Male & Female
     """
     GENDER_LIST=['Female', 'Male']
-    if gender[0,1,0,0] >= 0.70:
+    if gender[0,1,0,0] >= 0.60:
         return GENDER_LIST[1]
     else:
         return GENDER_LIST[0]
