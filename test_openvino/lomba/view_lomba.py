@@ -84,11 +84,11 @@ def age_class(age):
     return 'Below 30' if age <= 30 else 'Above 30'
 
 def iklan_jpg(genderclass, ageclass):
-        if ageclass == 'Below 30' &  genderclass == 'Female':
+        if (ageclass == 'Below 30') & (genderclass == 'Female'):
             jpg_output = 'iklan_female_below30.jpg'
-        elif ageclass == 'Below 30' &  genderclass == 'Male':
+        elif (ageclass == 'Below 30') & (genderclass == 'Male'):
             jpg_output = 'iklan_male_below30.jpg'
-        elif ageclass == 'Above 30' &  genderclass == 'Female':
+        elif (ageclass == 'Above 30') & (genderclass == 'Female'):
             jpg_output = 'iklan_female_above30.jpg'
         else :
             jpg_output = 'iklan_male_above30.jpg'
@@ -226,7 +226,7 @@ while cv.waitKey(1) != ord('q'):
     cv.resizeWindow('AI_Vertising',700,700)
     cv.imshow('AI_Vertising', image)
 
-    
+
     try:
         iklanjpg = iklan_jpg(class_gender, class_age)
         iklan = cv.imread("jpg_iklan/"+iklanjpg)
@@ -235,8 +235,7 @@ while cv.waitKey(1) != ord('q'):
         cv.resizeWindow('Iklan',683,768)
         cv.imshow('Iklan', iklan)
     except:
-        #continue
-        print(class_gender)
+        continue
     
 
 ###############################  Clean  Up  ############################
