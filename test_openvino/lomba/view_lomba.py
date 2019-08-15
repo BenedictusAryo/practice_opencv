@@ -83,6 +83,17 @@ def age_class(age):
     """
     return 'Below 30' if age <= 30 else 'Above 30'
 
+def iklan_jpg(genderclass, ageclass):
+        if ageclass == 'Below 30' &  genderclass == 'Female':
+            jpg_output = 'iklan_female_below30.jpg'
+        elif ageclass == 'Below 30' &  genderclass == 'Male':
+            jpg_output = 'iklan_male_below30.jpg'
+        elif ageclass == 'Above 30' &  genderclass == 'Female':
+            jpg_output = 'iklan_female_above30.jpg'
+        else :
+            jpg_output = 'iklan_male_above30.jpg'
+        return jpg_output
+
 #########################  Load Neural Network  #########################
 def load_model(plugin, model, weights):
     """
@@ -200,11 +211,13 @@ while cv.waitKey(1) != ord('q'):
                 status = req_handle_ageGender.wait()
                 age = req_handle_ageGender.outputs[AGE_OUTPUTKEYS]
                 age = int(age[0,0,0,0] *100)
+                class_age = age_class(age)
                 # Gender
                 gender = req_handle_ageGender.outputs[GENDER_OUTPUTKEYS]
+                class_gender = gender_class(gender)
 
                 # Put text of Age and Gender
-                cv.putText(image,f"{gender_class(gender)}, {age_class(age)}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+                cv.putText(image,f"{class_gender}, {class_age}",bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
             except:
                 continue
 
@@ -212,6 +225,19 @@ while cv.waitKey(1) != ord('q'):
     cv.moveWindow('AI_Vertising', 0,0)
     cv.resizeWindow('AI_Vertising',700,700)
     cv.imshow('AI_Vertising', image)
+
+    
+    try:
+        iklanjpg = iklan_jpg(class_gender, class_age)
+        iklan = cv.imread("jpg_iklan/"+iklanjpg)
+
+        cv.namedWindow('Iklan', cv.WINDOW_KEEPRATIO)
+        cv.resizeWindow('Iklan',683,768)
+        cv.imshow('Iklan', iklan)
+    except:
+        #continue
+        print(class_gender)
+    
 
 ###############################  Clean  Up  ############################
 del exec_facedetect
