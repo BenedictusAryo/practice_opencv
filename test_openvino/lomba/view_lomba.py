@@ -12,7 +12,8 @@ from openvino.inference_engine import IENetwork, IEPlugin
 import cv2 as cv
 import platform
 import time
-import argparse    
+import argparse
+import screeninfo    
 
 #######################  Create Argument Parser  ########################
 parser = argparse.ArgumentParser(
@@ -25,6 +26,11 @@ parser.add_argument("-s", "--sample", default=False,
         action='store_true', help="Inference using sample video")
 
 args = parser.parse_args()
+
+#########################  Get Screen Size Info  ########################
+screen = screeninfo.get_monitors()[0]
+screen_width, screen_height = screen.width, screen.height
+
 
 #######################  Device  Initialization  ########################
 #  Plugin initialization for specified device and load extensions library if specified
@@ -90,8 +96,10 @@ def iklan_jpg(genderclass, ageclass):
             jpg_output = 'iklan_male_below30.jpg'
         elif (ageclass == 'Above 30') & (genderclass == 'Female'):
             jpg_output = 'iklan_female_above30.jpg'
-        else :
+        elif (ageclass == 'Above 30') & (genderclass == 'Male'):
             jpg_output = 'iklan_male_above30.jpg'
+        else :
+            jpg_output = 'iklan_default.jpg'
         return jpg_output
 
 #########################  Load Neural Network  #########################
@@ -223,19 +231,19 @@ while cv.waitKey(1) != ord('q'):
 
     cv.namedWindow('AI_Vertising', cv.WINDOW_NORMAL)
     cv.moveWindow('AI_Vertising', 0,0)
-    cv.resizeWindow('AI_Vertising',700,700)
+    cv.resizeWindow('AI_Vertising', (int(screen_width/2), int(screen_height)))
     cv.imshow('AI_Vertising', image)
 
 
-    try:
-        iklanjpg = iklan_jpg(class_gender, class_age)
-        iklan = cv.imread("jpg_iklan/"+iklanjpg)
+    
+    iklanjpg = iklan_jpg(class_gender, class_age)
+    iklan = cv.imread("jpg_iklan/"+iklanjpg)
 
-        cv.namedWindow('Iklan', cv.WINDOW_KEEPRATIO)
-        cv.resizeWindow('Iklan',683,768)
-        cv.imshow('Iklan', iklan)
-    except:
-        continue
+    cv.namedWindow('Iklan', cv.WINDOW_KEEPRATIO)
+    cv.moveWindow('AI_Vertising', int(screen_width/2), 0)
+    cv.resizeWindow('Iklan', (int(screen_width/2), int(screen_height)))
+    cv.imshow('Iklan', iklan)
+    
     
 
 ###############################  Clean  Up  ############################
