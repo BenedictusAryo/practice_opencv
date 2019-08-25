@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 import cv2
 import numpy as np
-import keras
-from keras.utils.generic_utils import CustomObjectScope
 from flask import Flask, abort, request 
 import json
 import base64
 import io
 from imageio import imread
-import tensorflow as tf
-from keras import backend as K
 from flask import jsonify, make_response
 import platform
 import time
@@ -49,8 +45,8 @@ FACEDETECT_XML = "models/face-detection-retail-0004.xml"
 FACEDETECT_BIN = "models/face-detection-retail-0004.bin"
 
 ## Model 2: Age Gender Recognition
-AGEGENDER_XML = "models/age-gender-recognition-retail-0013.xml"
-AGEGENDER_BIN = "models/age-gender-recognition-retail-0013.bin"
+AGEGENDER_XML = "models/age-gender-recognition-retail-0013_FP32.xml"
+AGEGENDER_BIN = "models/age-gender-recognition-retail-0013_FP32.bin"
 
 GENDER_LIST=['Female', 'Male']
 
@@ -140,15 +136,15 @@ def recognize():
 
         # Put text of Age and Gender
         g = GENDER_LIST[gender]
-        a = age_class(age)
+        #a = age_class(age)
     except:
         print('err')
-    
-    res = {"age":a,"gender":g}
+    return str(age) + ';' + str(g)
+    #res = {"age":age,"gender":g}
     #return json.dumps(data)
     #response = app.response_class(response=json.dumps(res), status=200, mimetype='application/json')
     #print(res)
-    return make_response(jsonify(res), 200)
+    #return make_response(jsonify(res), 200)
 
     
 
