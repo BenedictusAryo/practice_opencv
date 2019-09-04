@@ -15,10 +15,10 @@ brightHighInt32 = np.int32(image) + brightnessOffset
 brightHighInt32Clipped = np.clip(brightHighInt32,0,255)
 
 # Display the outputs
-#cv2.imshow("original image",image)
-#cv2.imshow("using cv2.add function",brightHighOpenCV)
-#cv2.imshow("Using numpy and clipping", brightHighInt32Clipped)
-#cv2.waitKey(0)
+cv2.imshow("original image",image)
+cv2.imshow("using cv2.add function",brightHighOpenCV)
+cv2.imshow("Using numpy and clipping", brightHighInt32Clipped)
+cv2.waitKey(0)
 cv2.imwrite("../results/brightHighOpenCV.png",brightHighOpenCV)
 cv2.imwrite("../results/brightHighInt32Clipped.png",brightHighInt32Clipped)
 
