@@ -110,7 +110,7 @@ while cv.waitKey(1) != ord('q'):
 
     ######################## Get Inference Result  #########################
     status = req_handle.wait()
-    res = req_handle.outputs[FACEDETECT_OUTPUTKEYS]
+    res = req_handle.outputs[DETECTION_OUTPUTKEYS]
 
     # Get Bounding Box Result
     for detection in res[0][0]:
@@ -141,7 +141,7 @@ while cv.waitKey(1) != ord('q'):
 
 ###############################  Clean  Up  ############################
 del exec_detect
-del detect
+del net_detect
 del plugin
 cap.release()
 cv.destroyAllWindows()
