@@ -132,7 +132,7 @@ while cv.waitKey(1) != ord('q'):
         # Crop Face which having confidence > 90%
         if confidence > 0.9:
             ## Draw Boundingbox
-            cv.rectangle(image, (xmin, ymin), (xmax, ymax), fontColor)
+            cv.rectangle(image, (xmin, ymin), (xmax, ymax), boxColor)
             
 
     cv.namedWindow('Person Detection', cv.WINDOW_NORMAL)
