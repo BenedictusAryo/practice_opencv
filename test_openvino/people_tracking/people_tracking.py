@@ -13,6 +13,8 @@ import cv2 as cv
 import platform
 import time
 
+person = []
+
 #######################  Device  Initialization  ########################
 #  Plugin initialization for specified device and load extensions library if specified
 
@@ -46,6 +48,10 @@ if device == "CPU":
 DETECTION_XML = "models/person-detection-retail-0013.xml"
 DETECTION_BIN = "models/person-detection-retail-0013.bin"
 
+## Model 2: Person Reidentification
+REID_XML = "models/person-reidentification-retail-0031.xml"
+REID_BIN = "models/person-reidentification-retail-0031.bin"
+
 #########################  Load Neural Network  #########################
 def load_model(plugin, model, weights):
     """
@@ -67,6 +73,7 @@ def load_model(plugin, model, weights):
 
 ####################  Create Execution Network  #######################
 net_detect, exec_detect = load_model(plugin, DETECTION_XML, DETECTION_BIN)
+net_reid, exec_reid = load_model(plugin, REID_XML, REID_BIN)
 
 ###################  Obtain Input&Output Tensor  ######################
 ## Model 1
@@ -76,6 +83,13 @@ DETECTION_OUTPUTKEYS = 'detection_out'
 
 #  Obtain image_count, channels, height and width
 n_detect, c_detect, h_detect, w_detect = net_detect.inputs[DETECTION_INPUTKEYS].shape
+
+## Model 2
+#  Define Input&Output Network dict keys
+REID_INPUTKEYS = 'data'
+REID_OUTPUTKEYS = 'ip_reid'
+#  Obtain image_count, channels, height and width
+n_reid, c_reid, h_reid, w_reid = net_reid.inputs[REID_INPUTKEYS].shape
 
 # Image Preprocessing before goes to input Neural Network
 def image_preprocessing(image,n, c, h, w):
@@ -104,7 +118,7 @@ while cv.waitKey(1) != ord('q'):
         break
 
     ###################  Start  Inference Face Detection  ###################
-    #  Start asynchronous inference and get inference result
+    #  Start asynchronous face detection inference and get inference result
     blob = image_preprocessing(image, n_detect, c_detect, h_detect, w_detect)
     req_handle = exec_detect.start_async(request_id=0, inputs={DETECTION_INPUTKEYS:blob})
 
@@ -134,6 +148,12 @@ while cv.waitKey(1) != ord('q'):
             ## Draw Boundingbox
             cv.rectangle(image, (xmin, ymin), (xmax, ymax), boxColor)
             
+            ## Create CropPerson to reidentification
+            crop_person = image[ymin:ymax, xmin:xmax]
+
+            ## Count Person
+            person_count = len(person)
+            cv.putText(image, "person count: "+str(person_count), (0,0), font, fontScale, fontColor)
 
     cv.namedWindow('Person Detection', cv.WINDOW_NORMAL)
     cv.moveWindow('Person Detection', 0,0)
