@@ -1,3 +1,7 @@
+# Week 2 Assignment using Mouse for annotation
+# OpenCV Cropping tools GUI using mouse
+# Benedictus Aryo
+
 import cv2
 
 # List to store the points
