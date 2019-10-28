@@ -26,7 +26,7 @@ def drawCircle(action, x, y, flags, userdata):
         cv2.circle(source, center[0], 1,
                    (255, 255, 0), 2, cv2.LINE_AA)
 
-        # Action to be taken when left mouse button is released
+    # Action to be taken when left mouse button is released
     elif action == cv2.EVENT_LBUTTONUP:
         circumference = [(x, y)]
         # Calculate radius of the circle
