@@ -27,7 +27,7 @@ def drawRectangle(action, x, y, flags, userdata):
         face = source[topLeft[0][1]:bottomRight[0]
                       [1], topLeft[0][0]:bottomRight[0][0]]
         # print(face)
-        cv2.imwrite('face.png', face)
+        cv2.imwrite('face_output.png', face)
         cv2.imshow("Window", source)
         topLeft.clear()
         bottomRight.clear()
