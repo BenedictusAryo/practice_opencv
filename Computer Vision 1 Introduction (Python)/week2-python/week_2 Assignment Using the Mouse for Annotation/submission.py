@@ -34,7 +34,7 @@ def drawRectangle(action, x, y, flags, userdata):
 
 
 source = cv2.imread('sample.jpg', 1)
-print("image shape: ", source.shape)
+# print("image shape: ", source.shape)
 dummy = source.copy()
 
 cv2.namedWindow('Window')
