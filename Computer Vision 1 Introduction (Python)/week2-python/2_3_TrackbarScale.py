@@ -60,16 +60,16 @@ cv2.createTrackbar(trackbarValue, windowName,
                    scaleFactor, maxScaleUp, scaleImage)
 
 # Create Trackbar to choose type of scaling ( Up or down )
-cv2.createTrackbar(trackbarType, windowName, scaleType,
-                   maxType, scaleImage)
+cv2.createTrackbar(trackbarType, windowName,
+                   scaleType, maxType, scaleImage)
 
 # Calling the function for the first time
 # scaleImage(25)
 
 # Start the loop to record
 while True:
-    c = cv2.waitKey(20)
-    if c == 27:
+    key = cv2.waitKey(0)
+    if key == 27:
         break
 
 cv2.destroyAllWindows()
