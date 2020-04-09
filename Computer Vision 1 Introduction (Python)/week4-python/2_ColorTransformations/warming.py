@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from dataPath import DATA_PATH
 
-filename = DATA_PATH + "images/girl.jpg"
+filename = "../data/images/girl.jpg"
 
 original = cv2.imread(filename)
 img = np.copy(original)
